@@ -2,6 +2,7 @@
  * 商品詳情頁 + 預定功能（Client 互動部分）
  */
 import { notFound } from "next/navigation";
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { toProductWithAvailable } from "@/lib/utils";
 import { HeaderBar } from "@/components/public/HeaderBar";

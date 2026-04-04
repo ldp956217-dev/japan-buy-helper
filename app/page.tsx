@@ -1,6 +1,7 @@
 /**
  * 前台首頁 - 商品列表
  */
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { toProductWithAvailable } from "@/lib/utils";
 import { HeaderBar } from "@/components/public/HeaderBar";

@@ -1,6 +1,7 @@
 /**
  * 後台 - 預定明細頁
  */
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { formatTWD, formatDateTime } from "@/lib/utils";
 import { ClipboardList } from "lucide-react";

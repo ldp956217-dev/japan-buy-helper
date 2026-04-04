@@ -2,6 +2,7 @@
  * 後台編輯商品頁
  */
 import { notFound } from "next/navigation";
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { toProductWithAvailable } from "@/lib/utils";
 import { EditProductClient } from "./EditProductClient";

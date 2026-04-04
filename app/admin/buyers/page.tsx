@@ -1,6 +1,7 @@
 /**
  * 後台 - 購買人總覽頁
  */
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { formatTWD, formatDateTime } from "@/lib/utils";
 import { Users } from "lucide-react";

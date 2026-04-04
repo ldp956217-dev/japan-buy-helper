@@ -4,6 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Plus, Edit, Package } from "lucide-react";
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { toProductWithAvailable, formatPrice, formatTWD } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
