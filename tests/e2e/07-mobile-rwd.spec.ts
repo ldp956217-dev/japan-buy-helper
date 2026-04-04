@@ -33,16 +33,11 @@ test.describe("TC-RWD 手機版響應式測試", () => {
 
   test("RWD-04 後台手機版 Header nav 可見", async ({ page }) => {
     // 後台 NavBar 在手機版只顯示 icon，不顯示文字
-    await page.evaluate(async () => {
-      const r = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: "admin", password: "admin1234" }),
-        credentials: "include",
-      });
-      return r.ok;
-    });
-    await page.goto("/admin");
+    await page.goto("/admin/login");
+    await page.locator("input").first().fill("admin");
+    await page.locator('input[type="password"]').fill("admin1234");
+    await page.locator('button[type="submit"], button:has-text("登入")').click();
+    await page.waitForURL("**/admin");
     // 在手機版，nav icon 應可見
     await expect(page.locator("header")).toBeVisible();
   });

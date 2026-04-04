@@ -21,7 +21,7 @@ test.describe("TC-GUEST 訪客身份管理", () => {
   test("GUEST-02 設定暱稱後顯示鎖定畫面", async ({ page }) => {
     await setGuestIdentity(page, "QA測試員");
     await page.goto("/nickname");
-    await expect(page.locator("text=QA測試員")).toBeVisible();
+    await expect(page.locator("p.font-semibold:has-text('QA測試員'), p:has-text('QA測試員')").first()).toBeVisible();
     await expect(page.locator("text=暱稱確認後不可修改")).toBeVisible();
     await expect(page.locator('button:has-text("切換用戶")')).toBeVisible();
     // 不應有修改暱稱的輸入框

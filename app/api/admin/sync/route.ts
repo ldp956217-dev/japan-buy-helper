@@ -9,8 +9,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { safeSync } from "@/services/sync";
 import { calcAvailableStock } from "@/lib/utils";
+import { getAdminSession } from "@/lib/auth";
 
 export async function POST() {
+  const session = await getAdminSession();
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const results = { products: 0, buyers: 0, reservations: 0, errors: [] as string[] };
 

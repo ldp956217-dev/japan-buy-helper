@@ -20,13 +20,13 @@ test.describe("TC-PROD 商品管理", () => {
 
   test("PROD-01 商品列表頁正常顯示", async ({ page }) => {
     await page.goto("/admin");
-    await expect(page.locator("text=商品管理")).toBeVisible();
+    await expect(page.locator("h1:has-text('商品管理')")).toBeVisible();
     await expect(page.locator("text=新增商品")).toBeVisible();
   });
 
   test("PROD-02 新增商品表單驗證 - 空白送出應顯示錯誤", async ({ page }) => {
     await page.goto("/admin/products/new");
-    await page.locator('button:has-text("上架商品")').click();
+    await page.locator('button[type="submit"]').click();
     await expect(page.locator("text=請輸入商品名稱")).toBeVisible();
   });
 
@@ -38,7 +38,7 @@ test.describe("TC-PROD 商品管理", () => {
     await page.locator("#cost").fill(TEST_PRODUCT.cost);
     await page.locator("#storeName").fill(TEST_PRODUCT.storeName);
     await page.locator("#note").fill(TEST_PRODUCT.note);
-    await page.locator('button:has-text("上架商品")').click();
+    await page.locator('button[type="submit"]').click();
 
     // 應導回後台首頁
     await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
@@ -71,7 +71,7 @@ test.describe("TC-PROD 商品管理", () => {
   test("PROD-07 庫存快速調整按鈕存在於編輯頁", async ({ page }) => {
     await page.goto("/admin");
     await page.locator('a:has-text("編輯")').first().click();
-    await expect(page.locator('button:has-text("+1")').or(page.locator('button:has-text("+5")'))).toBeVisible();
+    await expect(page.locator('button:has-text("+1")').first()).toBeVisible();
   });
 
   test("PROD-08 後台商品列表顯示台幣售價和日幣成本", async ({ page }) => {

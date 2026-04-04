@@ -47,6 +47,6 @@ test.describe("TC-FRONT 前台商品瀏覽", () => {
   test("FRONT-06 Header 顯示正確元素", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("text=日本代購")).toBeVisible();
-    await expect(page.locator('a[href="/me"]').or(page.locator('text=我的預定').or(page.locator('[href="/me"]')))).toBeVisible();
+    await expect(page.locator('a[href="/me"]').first()).toBeVisible();
   });
 });

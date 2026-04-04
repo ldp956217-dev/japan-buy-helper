@@ -21,14 +21,14 @@ test.describe("TC-AUTH 後台認證", () => {
   test("AUTH-03 正確帳密應成功登入並進入後台", async ({ page }) => {
     await adminLogin(page);
     await expect(page).toHaveURL(/\/admin/);
-    await expect(page.locator("text=商品管理")).toBeVisible();
+    await expect(page.locator("h1:has-text('商品管理')")).toBeVisible();
   });
 
   test("AUTH-04 登入後未登入頁 /admin/login 應可訪問（不強制跳轉）", async ({ page }) => {
     await adminLogin(page);
     await page.goto("/admin/login");
     // 登入頁應正常顯示（middleware 只保護 /admin，不含 /admin/login）
-    await expect(page.locator("text=管理後台").or(page.locator("text=帳號"))).toBeVisible();
+    await expect(page.locator("label:has-text('帳號')")).toBeVisible();
   });
 
   test("AUTH-05 登出後應無法訪問後台", async ({ page }) => {

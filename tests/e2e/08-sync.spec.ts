@@ -35,15 +35,11 @@ test.describe("TC-SYNC Google Sheets 同步", () => {
   });
 
   test("SYNC-03 後台 NavBar 顯示同步試算表按鈕", async ({ page }) => {
-    await page.evaluate(async () => {
-      await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: "admin", password: "admin1234" }),
-        credentials: "include",
-      });
-    });
-    await page.goto("/admin");
-    await expect(page.locator('button[title="同步到 Google Sheets"]').or(page.locator('button:has-text("同步試算表")'))).toBeVisible();
+    await page.goto("/admin/login");
+    await page.locator("input").first().fill("admin");
+    await page.locator('input[type="password"]').fill("admin1234");
+    await page.locator('button[type="submit"], button:has-text("登入")').click();
+    await page.waitForURL("**/admin");
+    await expect(page.locator('button[title="同步到 Google Sheets"]').or(page.locator('button:has-text("同步試算表")')).first()).toBeVisible();
   });
 });

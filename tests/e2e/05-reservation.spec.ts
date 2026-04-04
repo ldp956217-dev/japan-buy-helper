@@ -16,14 +16,14 @@ test.describe("TC-RES 預定流程", () => {
     });
     await page.goto(ACTIVE_PRODUCT_PATH);
     await page.locator('button:has-text("確認預定")').click();
-    await expect(page.locator('text=請先輸入你的暱稱').or(page.locator('[role="dialog"]'))).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]').first()).toBeVisible({ timeout: 5000 });
   });
 
   test("RES-02 設定暱稱後點預定應彈出確認 Dialog", async ({ page }) => {
     await setGuestIdentity(page, `RES測試_${Date.now()}`);
     await page.goto(ACTIVE_PRODUCT_PATH);
     await page.locator('button:has-text("確認預定")').click();
-    await expect(page.locator("text=確認預定").nth(1).or(page.locator('[role="dialog"]').filter({ hasText: "確認" }))).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]').first()).toBeVisible({ timeout: 5000 });
   });
 
   test("RES-03 確認預定後應導向我的預定頁並顯示訂單", async ({ page }) => {
@@ -47,13 +47,15 @@ test.describe("TC-RES 預定流程", () => {
     await setGuestIdentity(page, `數量測試_${Date.now()}`);
     await page.goto(ACTIVE_PRODUCT_PATH);
 
-    const plusBtn = page.locator('button:has-text("+")');
+    const plusBtn = page.locator('[aria-label="增加數量"]');
     // 一直加到不能加
     let prevValue = "";
     for (let i = 0; i < 20; i++) {
       const currentValue = await page.locator(".font-semibold").filter({ hasText: /^\d+$/ }).textContent();
       if (currentValue === prevValue) break; // 沒有變化，已到上限
       prevValue = currentValue ?? "";
+      const isDisabled = await plusBtn.isDisabled();
+      if (isDisabled) break;
       await plusBtn.click();
     }
     // 按鈕應被 disabled
@@ -72,10 +74,10 @@ test.describe("TC-RES 預定流程", () => {
     await setGuestIdentity(page, `金額確認_${Date.now()}`);
     await page.goto(ACTIVE_PRODUCT_PATH);
     await page.locator('button:has-text("確認預定")').click();
-    const dialog = page.locator('[role="dialog"]');
+    const dialog = page.locator('[role="dialog"]').first();
     await expect(dialog).toBeVisible({ timeout: 5000 });
     // 金額應顯示 $
-    await expect(dialog.locator("text=/\\$\\d+/")).toBeVisible();
+    await expect(dialog.locator("text=/\\$\\d+/").first()).toBeVisible();
   });
 
   test("RES-07 我的預定頁顯示台幣金額 $", async ({ page }) => {
@@ -96,7 +98,7 @@ test.describe("TC-RES 預定流程", () => {
   test("RES-08 後台預定明細頁顯示所有訂單", async ({ page }) => {
     await adminLogin(page);
     await page.goto("/admin/reservations");
-    await expect(page.locator("text=預定明細")).toBeVisible();
+    await expect(page.locator("h1:has-text('預定明細')")).toBeVisible();
     // 訂單編號格式 R00xxx
     await expect(page.locator("text=/R\\d{5}/").first()).toBeVisible();
   });

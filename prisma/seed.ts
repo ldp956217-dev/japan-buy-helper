@@ -20,18 +20,34 @@ async function main() {
   console.log("🌱 Starting seed...");
 
   // ==============================
+  // 清除測試資料（保留種子資料）
+  // ==============================
+  // 刪除非種子預定（避免 orderNo unique constraint 衝突）
+  await prisma.reservation.deleteMany({
+    where: { id: { notIn: ["seed-reservation-1", "seed-reservation-2"] } },
+  });
+  // 刪除非種子 guest
+  await prisma.guest.deleteMany({
+    where: { guestToken: { not: "seed-guest-token-001" } },
+  });
+  // 刪除非種子商品（PROD-03 等測試新增的商品）
+  await prisma.product.deleteMany({
+    where: { id: { notIn: ["seed-product-1", "seed-product-2", "seed-product-3"] } },
+  });
+
+  // ==============================
   // 初始化流水號計數器
   // ==============================
   await prisma.counter.upsert({
     where: { id: "product" },
-    update: {},
-    create: { id: "product", value: 0 },
+    update: { value: 3 },
+    create: { id: "product", value: 3 },
   });
 
   await prisma.counter.upsert({
     where: { id: "reservation" },
-    update: {},
-    create: { id: "reservation", value: 0 },
+    update: { value: 2 },
+    create: { id: "reservation", value: 2 },
   });
 
   // ==============================
@@ -49,14 +65,6 @@ async function main() {
     },
   });
   console.log(`✅ Admin 帳號建立: ${adminUsername} / ${adminPassword}`);
-
-  // ==============================
-  // 更新計數器到 3 (for 3 seed products)
-  // ==============================
-  await prisma.counter.update({
-    where: { id: "product" },
-    data: { value: 3 },
-  });
 
   // ==============================
   // 種子商品資料
@@ -86,7 +94,7 @@ async function main() {
       cost: 300,
       note: "超人氣保濕化妝水，幾乎每次去都搶購一空",
       storeName: "BIC CAMERA",
-      status: ProductStatus.ACTIVE,
+      status: ProductStatus.SOLD_OUT,
     },
     {
       id: "seed-product-3",
@@ -128,10 +136,6 @@ async function main() {
   // ==============================
   // 種子 Reservation 資料
   // ==============================
-  await prisma.counter.update({
-    where: { id: "reservation" },
-    data: { value: 2 },
-  });
 
   await prisma.reservation.upsert({
     where: { id: "seed-reservation-1" },
