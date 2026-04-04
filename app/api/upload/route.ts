@@ -32,7 +32,8 @@ async function uploadToCloudinary(buffer: Buffer, ext: string): Promise<string> 
   void paramStr; void signature;
 
   const formData = new FormData();
-  const blob = new Blob([buffer], { type: `image/${ext}` });
+  const arrayBuf = Buffer.from(buffer).buffer as ArrayBuffer;
+  const blob = new Blob([arrayBuf], { type: `image/${ext}` });
   formData.append("file", blob, `upload.${ext}`);
   formData.append("api_key", apiKey);
   formData.append("timestamp", timestamp);

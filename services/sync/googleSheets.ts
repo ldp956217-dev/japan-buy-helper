@@ -86,7 +86,7 @@ export class GoogleSheetsSyncService implements SyncService {
         spreadsheetId: this.sheetsId,
         range: `${sheetName}!A1`,
         valueInputOption: "RAW",
-        requestBody: { values: [SHEET_HEADERS[sheetName]] },
+        requestBody: { values: [[...SHEET_HEADERS[sheetName]]] },
       });
       console.log(`[GoogleSheets] 初始化表頭: ${sheetName}`);
     }
