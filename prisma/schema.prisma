@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================
+// Enums
+// ==============================
+
+enum ProductStatus {
+  DRAFT     // 草稿，前台不顯示
+  ACTIVE    // 上架中
+  SOLD_OUT  // 售完（自動或手動）
+  INACTIVE  // 下架
+}
+
+enum ReservationStatus {
+  CONFIRMED  // 確認預定
+  CANCELLED  // 已取消
+}
+
+// ==============================
+// Models
+// ==============================
+
+model Product {
+  id            String        @id @default(cuid())
+  serialNo      String        @unique  // P00001, P00002...
+  name          String
+  imageUrl      String        @default("")
+  totalStock    Int           @default(0)
+  reservedStock Int           @default(0)
+  price         Int           // 售價（日幣 or 台幣，視使用情境）
+  cost          Int           @default(0) // 成本（admin 自用）
+  note          String?
+  storeName     String?
+  status        ProductStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  reservations  Reservation[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Guest {
+  id         String   @id @default(cuid())
+  guestToken String   @unique  // 前端 uuid，存 localStorage
+  nickname   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  reservations Reservation[]
+
+  @@index([guestToken])
+}
+
+model Reservation {
+  id                  String            @id @default(cuid())
+  orderNo             String            @unique  // R00001, R00002...
+  productId           String
+  guestId             String
+  nicknameSnapshot    String   // 下單當下的暱稱快照
+  productNameSnapshot String   // 下單當下的商品名稱快照
+  quantity            Int
+  unitPrice           Int      // 下單當下的單價快照
+  totalAmount         Int      // quantity * unitPrice
+  status              ReservationStatus @default(CONFIRMED)
+  reservedAt          DateTime @default(now())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  guest   Guest   @relation(fields: [guestId], references: [id])
+
+  @@index([guestId])
+  @@index([productId])
+  @@index([reservedAt])
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// 流水號計數器，用來產生 P00001, R00001 等可讀 ID
+model Counter {
+  id    String @id  // "product" | "reservation"
+  value Int    @default(0)
+}
