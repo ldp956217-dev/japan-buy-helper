@@ -4,7 +4,7 @@
  */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSyncService } from "@/services/sync";
+import { getSyncService, getSyncMode } from "@/services/sync";
 import { calcAvailableStock } from "@/lib/utils";
 import { getAdminSession } from "@/lib/auth";
 
@@ -20,7 +20,7 @@ export async function POST() {
 
     // 取得 sync service（會 log 使用哪種模式）
     const service = await getSyncService();
-    const isGoogle = service.constructor.name === "GoogleSheetsSyncService";
+    const mode = getSyncMode();
 
     const runSync = async (fn: () => Promise<void>, label: string) => {
       try {
@@ -107,7 +107,7 @@ export async function POST() {
     const hasErrors = syncErrors.length > 0;
     return NextResponse.json({
       success: !hasErrors,
-      mode: isGoogle ? "google_sheets" : "mock",
+      mode,
       data: results,
       errors: syncErrors,
     });

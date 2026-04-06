@@ -13,6 +13,7 @@ export type {
 } from "./types";
 
 let _syncService: SyncService | null = null;
+let _syncMode: "google_sheets" | "mock" = "mock";
 
 export async function getSyncService(): Promise<SyncService> {
   if (_syncService) return _syncService;
@@ -22,20 +23,23 @@ export async function getSyncService(): Promise<SyncService> {
   const hasCredentials = !!process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
 
   if (isEnabled && hasSheetId && hasCredentials) {
-    // 動態 import，避免不需要時載入 googleapis
     const { GoogleSheetsSyncService } = await import("./googleSheets");
     _syncService = new GoogleSheetsSyncService();
+    _syncMode = "google_sheets";
     console.log("[Sync] Using Google Sheets sync service");
   } else {
     _syncService = new MockSyncService();
+    _syncMode = "mock";
     if (isEnabled) {
-      console.warn(
-        "[Sync] GOOGLE_SHEETS_ENABLED=true 但缺少必要環境變數，使用 Mock"
-      );
+      console.warn("[Sync] GOOGLE_SHEETS_ENABLED=true 但缺少必要環境變數，使用 Mock");
     }
   }
 
   return _syncService;
+}
+
+export function getSyncMode(): "google_sheets" | "mock" {
+  return _syncMode;
 }
 
 /**
