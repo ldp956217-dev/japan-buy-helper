@@ -18,9 +18,9 @@ export class MockSyncService implements SyncService {
     console.log("[MockSync] syncBuyerSummary:", buyer.nickname);
   }
 
-  async appendReservationDetail(
+  async upsertReservationDetail(
     reservation: ReservationDetailRow
   ): Promise<void> {
-    console.log("[MockSync] appendReservationDetail:", reservation.orderNo);
+    console.log("[MockSync] upsertReservationDetail:", reservation.orderNo, reservation.status);
   }
 }

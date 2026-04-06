@@ -89,7 +89,7 @@ export async function POST() {
     });
 
     for (const r of reservations) {
-      await runSync(() => service.appendReservationDetail({
+      await runSync(() => service.upsertReservationDetail({
         orderNo: r.orderNo,
         productSerialNo: r.product?.serialNo ?? "",
         productName: r.productNameSnapshot,

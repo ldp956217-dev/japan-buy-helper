@@ -193,9 +193,9 @@ async function triggerSyncAfterReservation(
     // 彙總查詢失敗，skip buyer sync
   }
 
-  // 新增購買明細
+  // 新增購買明細（upsert by orderNo，避免重複列）
   await safeSync((s) =>
-    s.appendReservationDetail({
+    s.upsertReservationDetail({
       orderNo: reservation.orderNo,
       productSerialNo: product.serialNo,
       productName: product.name,

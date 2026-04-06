@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { AdminProductForm } from "@/components/admin/AdminProductForm";
-import { StockQuickAdjust } from "@/components/admin/StockQuickAdjust";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
@@ -39,24 +38,6 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
     }
 
     window.location.href = "/admin";
-  };
-
-  /** 快速調整庫存 */
-  const handleQuickStockAdjust = async (newTotal: number) => {
-    const res = await fetch(`/api/admin/products/${product.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ totalStock: newTotal }),
-    });
-    const json = await res.json();
-    if (json.success) {
-      setProduct({
-        ...product,
-        totalStock: newTotal,
-        availableStock: newTotal - product.reservedStock,
-        status: newTotal > product.reservedStock ? "ACTIVE" : product.status,
-      });
-    }
   };
 
   /** 切換上架/下架狀態 */
@@ -105,7 +86,7 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-4">
         <h2 className="text-sm font-semibold text-gray-700 mb-3">庫存狀態</h2>
 
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-3">
           <div className="text-center bg-gray-50 rounded-lg py-2">
             <p className="text-xs text-gray-400">總上架</p>
             <p className="text-lg font-bold">{product.totalStock}</p>
@@ -122,15 +103,9 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
           </div>
         </div>
 
-        {/* 快速庫存調整 */}
-        <div>
-          <p className="text-xs text-gray-400 mb-2">快速調整庫存</p>
-          <StockQuickAdjust
-            currentTotal={product.totalStock}
-            reservedStock={product.reservedStock}
-            onAdjust={handleQuickStockAdjust}
-          />
-        </div>
+        <p className="text-xs text-gray-400 mt-3">
+          如需修改上架數量，請透過下方「上架數量」欄位儲存變更。
+        </p>
 
         {/* 重新上架提示 */}
         {(product.status === "SOLD_OUT" || product.status === "INACTIVE") && product.availableStock > 0 && (

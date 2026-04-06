@@ -188,13 +188,27 @@ export class GoogleSheetsSyncService implements SyncService {
   }
 
   /**
-   * 新增一筆預定明細 (Sheet C)
-   * 策略: 永遠 append
+   * 新增或更新一筆預定明細 (Sheet C)
+   * 策略（upsert by orderNo）:
+   *   - 搜尋 A 欄是否已有相同 orderNo
+   *   - 若找到 → 覆蓋該列（確保狀態、金額等資料是最新的）
+   *   - 若不存在 → append 新列
+   * 這樣可避免重複資料，也確保取消訂單後狀態能正確反映到試算表
    */
-  async appendReservationDetail(reservation: ReservationDetailRow): Promise<void> {
+  async upsertReservationDetail(reservation: ReservationDetailRow): Promise<void> {
     await this.ensureHeaders("購買明細");
     const sheets = await this.getSheetsClient();
     const sheetName = "購買明細";
+
+    // 讀取 A 欄所有訂單編號，找出是否已存在
+    const readRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: this.sheetsId,
+      range: `${sheetName}!A:A`,
+    });
+
+    const rows = readRes.data.values || [];
+    // rows[0] 是表頭，從 index 1 開始是資料列（實際列號 = index + 1）
+    const rowIndex = rows.findIndex((r) => r[0] === reservation.orderNo);
 
     const rowData = [
       reservation.orderNo,
@@ -209,13 +223,24 @@ export class GoogleSheetsSyncService implements SyncService {
       reservation.reservedAt,
     ];
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: this.sheetsId,
-      range: `${sheetName}!A:J`,
-      valueInputOption: "RAW",
-      requestBody: { values: [rowData] },
-    });
-
-    console.log(`[GoogleSheets] appendReservationDetail: ${reservation.orderNo} done`);
+    if (rowIndex > 0) {
+      // 已存在（rowIndex > 0 跳過表頭）→ 更新該列
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: this.sheetsId,
+        range: `${sheetName}!A${rowIndex + 1}`,
+        valueInputOption: "RAW",
+        requestBody: { values: [rowData] },
+      });
+      console.log(`[GoogleSheets] upsertReservationDetail (update): ${reservation.orderNo} → ${reservation.status}`);
+    } else {
+      // 不存在 → 新增一列
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: this.sheetsId,
+        range: `${sheetName}!A:J`,
+        valueInputOption: "RAW",
+        requestBody: { values: [rowData] },
+      });
+      console.log(`[GoogleSheets] upsertReservationDetail (append): ${reservation.orderNo} → ${reservation.status}`);
+    }
   }
 }

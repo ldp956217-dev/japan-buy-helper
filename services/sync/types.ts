@@ -41,5 +41,10 @@ export interface ReservationDetailRow {
 export interface SyncService {
   syncProductSummary(product: ProductSummaryRow): Promise<void>;
   syncBuyerSummary(buyer: BuyerSummaryRow): Promise<void>;
-  appendReservationDetail(reservation: ReservationDetailRow): Promise<void>;
+  /**
+   * 新增或更新一筆購買明細（以 orderNo 作為唯一鍵）
+   * 若試算表已有相同 orderNo → 覆蓋該列
+   * 若不存在 → 新增一列
+   */
+  upsertReservationDetail(reservation: ReservationDetailRow): Promise<void>;
 }
