@@ -28,8 +28,11 @@ export function useGuest() {
    * 呼叫後端 /api/guests/switch，以 nickname 為 key 找或建立 Guest，
    * 取得對應的 guestToken 存入 localStorage。
    * 同暱稱永遠對應同一身份。
+   *
+   * 回傳 { guestToken, nickname } 讓呼叫方可在 hook re-render 完成前直接使用，
+   * 解決 React state 非同步更新導致的時序問題。
    */
-  const setNickname = useCallback(async (newNickname: string) => {
+  const setNickname = useCallback(async (newNickname: string): Promise<{ guestToken: string; nickname: string }> => {
     const res = await fetch("/api/guests/switch", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -43,6 +46,7 @@ export function useGuest() {
     localStorage.setItem(STORAGE_KEYS.GUEST_NICKNAME, resolvedNickname);
     setGuestToken(token);
     setNicknameState(resolvedNickname);
+    return { guestToken: token, nickname: resolvedNickname };
   }, []);
 
   /** 登出（清除本機身份，不刪後端資料） */

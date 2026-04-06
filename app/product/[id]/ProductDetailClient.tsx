@@ -28,11 +28,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [showNicknameDialog, setShowNicknameDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [reserveLoading, setReserveLoading] = useState(false);
-  // 從 NicknameDialog 直接拿到的暱稱（解決 useGuest hook 非同步更新導致空值的 bug）
+  // 從 NicknameDialog 直接拿到的暱稱與 token（解決 hook state 非同步更新的 bug）
+  // 已登入用戶：hook 的 nickname/guestToken 有值，pending 為空無影響
+  // 首次設定：hook re-render 尚未完成，pending 作為即時備援保障流程正常
   const [pendingNickname, setPendingNickname] = useState("");
+  const [pendingGuestToken, setPendingGuestToken] = useState("");
 
-  // 以 hook 的 nickname 為主（已存在的用戶），首次設定時用 pendingNickname 作為即時備援
   const effectiveNickname = nickname || pendingNickname;
+  const effectiveGuestToken = guestToken || pendingGuestToken;
 
   const isSoldOut = product.availableStock <= 0;
 
@@ -46,15 +49,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     setShowConfirmDialog(true);
   };
 
-  /** nickname 設定完成後，把剛確認的暱稱存入 pendingNickname，再開確認 dialog */
-  const handleNicknameConfirm = (confirmedNickname: string) => {
+  /** nickname 設定完成後，把 API 回傳的暱稱與 token 存入 pending，再開確認 dialog */
+  const handleNicknameConfirm = (confirmedNickname: string, confirmedGuestToken: string) => {
     setPendingNickname(confirmedNickname);
+    setPendingGuestToken(confirmedGuestToken);
     setShowConfirmDialog(true);
   };
 
   /** 送出預定 */
   const handleConfirmReserve = async () => {
-    if (!guestToken || !effectiveNickname) return;
+    if (!effectiveGuestToken || !effectiveNickname) return;
     setReserveLoading(true);
 
     try {
@@ -63,7 +67,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: product.id,
-          guestToken,
+          guestToken: effectiveGuestToken,
           nickname: effectiveNickname,
           quantity,
         }),

@@ -17,8 +17,8 @@ import { useGuest } from "@/hooks/useGuest";
 interface NicknameDialogProps {
   open: boolean;
   onClose: () => void;
-  /** 確認後回傳已儲存的暱稱字串，讓父層可直接使用，不依賴 hook 非同步更新 */
-  onConfirm?: (confirmedNickname: string) => void;
+  /** 確認後回傳已儲存的暱稱與 guestToken，讓父層不依賴 hook 非同步更新即可直接使用 */
+  onConfirm?: (confirmedNickname: string, confirmedGuestToken: string) => void;
 }
 
 export function NicknameDialog({
@@ -44,8 +44,9 @@ export function NicknameDialog({
     setError("");
     setLoading(true);
     try {
-      await setNickname(trimmed);
-      onConfirm?.(trimmed); // 直接回傳已確認的暱稱，父層不必等 hook re-render
+      const result = await setNickname(trimmed);
+      // 直接回傳 API 解析後的 nickname 與 guestToken，父層不依賴 hook re-render
+      onConfirm?.(result.nickname, result.guestToken);
       onClose();
     } catch {
       setError("操作失敗，請重試");
