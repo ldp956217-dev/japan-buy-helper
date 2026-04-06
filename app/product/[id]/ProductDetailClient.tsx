@@ -28,6 +28,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [showNicknameDialog, setShowNicknameDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [reserveLoading, setReserveLoading] = useState(false);
+  // 從 NicknameDialog 直接拿到的暱稱（解決 useGuest hook 非同步更新導致空值的 bug）
+  const [pendingNickname, setPendingNickname] = useState("");
+
+  // 以 hook 的 nickname 為主（已存在的用戶），首次設定時用 pendingNickname 作為即時備援
+  const effectiveNickname = nickname || pendingNickname;
 
   const isSoldOut = product.availableStock <= 0;
 
@@ -41,14 +46,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     setShowConfirmDialog(true);
   };
 
-  /** nickname 設定完成後，繼續開確認 dialog */
-  const handleNicknameConfirm = () => {
+  /** nickname 設定完成後，把剛確認的暱稱存入 pendingNickname，再開確認 dialog */
+  const handleNicknameConfirm = (confirmedNickname: string) => {
+    setPendingNickname(confirmedNickname);
     setShowConfirmDialog(true);
   };
 
   /** 送出預定 */
   const handleConfirmReserve = async () => {
-    if (!guestToken || !nickname) return;
+    if (!guestToken || !effectiveNickname) return;
     setReserveLoading(true);
 
     try {
@@ -58,7 +64,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         body: JSON.stringify({
           productId: product.id,
           guestToken,
-          nickname,
+          nickname: effectiveNickname,
           quantity,
         }),
       });
@@ -195,7 +201,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       <NicknameDialog
         open={showNicknameDialog}
         onClose={() => setShowNicknameDialog(false)}
-        onConfirm={() => handleNicknameConfirm()}
+        onConfirm={handleNicknameConfirm}
       />
 
       {/* 確認預定 Dialog */}
@@ -206,7 +212,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         productName={product.name}
         quantity={quantity}
         unitPrice={product.price}
-        nickname={nickname || ""}
+        nickname={effectiveNickname}
         isLoading={reserveLoading}
       />
 

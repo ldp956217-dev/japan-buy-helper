@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,17 @@ export function ReserveConfirmDialog({
   isLoading = false,
 }: ReserveConfirmDialogProps) {
   const totalAmount = unitPrice * quantity;
+  const [nicknameError, setNicknameError] = useState("");
+
+  /** 防呆：nickname 空值時阻止送出 */
+  const handleConfirmClick = () => {
+    if (!nickname || nickname.trim() === "") {
+      setNicknameError("預定人暱稱遺失，請重新整理頁面後再填寫暱稱");
+      return;
+    }
+    setNicknameError("");
+    onConfirm();
+  };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && !isLoading && onClose()}>
@@ -68,9 +80,19 @@ export function ReserveConfirmDialog({
             </div>
           </div>
 
-          <p className="text-xs text-gray-400 text-center">
-            預定人：{nickname}
-          </p>
+          <div className="text-center">
+            <p className="text-xs text-gray-400">
+              預定人：
+              {nickname ? (
+                <span className="font-medium text-gray-600">{nickname}</span>
+              ) : (
+                <span className="text-red-500 font-medium">（未填寫）</span>
+              )}
+            </p>
+            {nicknameError && (
+              <p className="text-xs text-red-500 mt-1">{nicknameError}</p>
+            )}
+          </div>
         </div>
 
         <DialogFooter>
@@ -83,7 +105,7 @@ export function ReserveConfirmDialog({
             取消
           </Button>
           <Button
-            onClick={onConfirm}
+            onClick={handleConfirmClick}
             disabled={isLoading}
             className="flex-1 sm:flex-none h-11"
           >
