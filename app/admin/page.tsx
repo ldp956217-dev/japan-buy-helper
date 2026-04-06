@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Plus, Edit, Package } from "lucide-react";
 export const dynamic = "force-dynamic";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { toProductWithAvailable, formatPrice, formatTWD } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,17 @@ import { CopyLinkButton } from "@/components/admin/CopyLinkButton";
 
 async function getAdminProducts() {
   const products = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
+    where: { status: { not: "INACTIVE" } },
   });
-  return products.map((p) => toProductWithAvailable(p));
+  const statusOrder = { ACTIVE: 0, DRAFT: 1, SOLD_OUT: 2, INACTIVE: 3 } as const;
+  return products
+    .map((p) => toProductWithAvailable(p))
+    .sort((a, b) => {
+      const oa = statusOrder[a.status as keyof typeof statusOrder] ?? 3;
+      const ob = statusOrder[b.status as keyof typeof statusOrder] ?? 3;
+      if (oa !== ob) return oa - ob;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 }
 
 const statusConfig = {
@@ -27,7 +36,10 @@ const statusConfig = {
 
 export default async function AdminPage() {
   const products = await getAdminProducts();
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const headersList = await headers();
+  const host = headersList.get("host") || "localhost:3000";
+  const proto = host.includes("localhost") ? "http" : "https";
+  const baseUrl = `${proto}://${host}`;
 
   return (
     <div>

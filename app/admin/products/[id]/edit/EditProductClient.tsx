@@ -38,8 +38,7 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
       throw new Error(json.error || "更新失敗");
     }
 
-    router.push("/admin");
-    router.refresh();
+    window.location.href = "/admin";
   };
 
   /** 快速調整庫存 */

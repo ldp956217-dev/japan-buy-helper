@@ -14,21 +14,31 @@ async function getProducts(): Promise<ProductListItem[]> {
     where: {
       status: { in: ["ACTIVE", "SOLD_OUT"] },
     },
-    orderBy: { createdAt: "desc" },
   });
 
-  return products.map((p) => {
-    const withAvail = toProductWithAvailable(p);
-    return {
-      id: p.id,
-      serialNo: p.serialNo,
-      name: p.name,
-      imageUrl: p.imageUrl,
-      price: p.price,
-      availableStock: withAvail.availableStock,
-      status: p.status as "ACTIVE" | "SOLD_OUT",
-    };
-  });
+  const statusOrder = { ACTIVE: 0, SOLD_OUT: 1 } as const;
+
+  return products
+    .map((p) => {
+      const withAvail = toProductWithAvailable(p);
+      return {
+        id: p.id,
+        serialNo: p.serialNo,
+        name: p.name,
+        imageUrl: p.imageUrl,
+        price: p.price,
+        availableStock: withAvail.availableStock,
+        status: p.status as "ACTIVE" | "SOLD_OUT",
+        createdAt: p.createdAt,
+      };
+    })
+    .sort((a, b) => {
+      const oa = statusOrder[a.status as keyof typeof statusOrder] ?? 1;
+      const ob = statusOrder[b.status as keyof typeof statusOrder] ?? 1;
+      if (oa !== ob) return oa - ob;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    })
+    .map(({ createdAt: _createdAt, ...rest }) => rest);
 }
 
 export default async function HomePage() {

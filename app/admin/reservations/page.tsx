@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { formatTWD, formatDateTime } from "@/lib/utils";
 import { ClipboardList } from "lucide-react";
+import { CancelReservationButton } from "@/components/admin/CancelReservationButton";
 
 async function getReservations() {
   return prisma.reservation.findMany({
@@ -51,15 +52,20 @@ export default async function ReservationsPage() {
                 <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
                   {r.orderNo}
                 </span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    r.status === "CONFIRMED"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-500 line-through"
-                  }`}
-                >
-                  {r.status === "CONFIRMED" ? "已確認" : "已取消"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      r.status === "CONFIRMED"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-500 line-through"
+                    }`}
+                  >
+                    {r.status === "CONFIRMED" ? "已確認" : "已取消"}
+                  </span>
+                  {r.status === "CONFIRMED" && (
+                    <CancelReservationButton reservationId={r.id} orderNo={r.orderNo} />
+                  )}
+                </div>
               </div>
 
               {/* 商品 & 買家 */}

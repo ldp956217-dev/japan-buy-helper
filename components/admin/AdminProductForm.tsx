@@ -16,9 +16,9 @@ import type { Product } from "@/types";
 
 const productSchema = z.object({
   name: z.string().min(1, "請輸入商品名稱").max(100, "最多 100 字"),
-  totalStock: z.coerce.number().int().min(1, "上架數量至少 1"),
-  price: z.coerce.number().int().min(0, "售價不可為負數"),
-  cost: z.coerce.number().int().min(0, "成本不可為負數"),
+  totalStock: z.number().int().min(1, "上架數量至少 1"),
+  price: z.number().int().min(0, "售價不可為負數"),
+  cost: z.number().int().min(0, "成本不可為負數"),
   note: z.string().max(300, "備註最多 300 字").optional(),
   storeName: z.string().max(50, "店家名稱最多 50 字").optional(),
 });
@@ -202,7 +202,7 @@ export function AdminProductForm({
           type="number"
           min="1"
           inputMode="numeric"
-          {...register("totalStock")}
+          {...register("totalStock", { valueAsNumber: true })}
         />
         {errors.totalStock && (
           <p className="text-sm text-red-500">{errors.totalStock.message}</p>
@@ -218,7 +218,7 @@ export function AdminProductForm({
             type="number"
             min="0"
             inputMode="numeric"
-            {...register("price")}
+            {...register("price", { valueAsNumber: true })}
           />
           {errors.price && (
             <p className="text-sm text-red-500">{errors.price.message}</p>
@@ -231,7 +231,7 @@ export function AdminProductForm({
             type="number"
             min="0"
             inputMode="numeric"
-            {...register("cost")}
+            {...register("cost", { valueAsNumber: true })}
           />
           {errors.cost && (
             <p className="text-sm text-red-500">{errors.cost.message}</p>
